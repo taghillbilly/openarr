@@ -6,9 +6,20 @@ name: Build APK (manual)
 # secrets used by release.yml are set they're used, otherwise the APK is
 # signed with the debug keystore checked into the repo. A debug-signed APK
 # installs fine but cannot update an APK signed with a different key.
+#
+# Give it a release tag (e.g. v1.0.1) to also publish a GitHub release with
+# the APK attached; the version name is taken from the tag.
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Publish a release with this tag (e.g. v1.0.1), blank to only build
+        required: false
+        default: ''
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -30,6 +41,15 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Set version from release tag
+        if: inputs.release_tag != ''
+        env:
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          VERSION="${TAG#v}"
+          sed -i "s/versionName \".*\"/versionName \"${VERSION}\"/" android/app/build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${GITHUB_RUN_NUMBER}/" android/app/build.gradle
 
       - name: Signing config
         env:
@@ -56,3 +76,14 @@ jobs:
           name: openarr-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
+
+      - name: Publish release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          VERSION="${TAG#v}"
+          cp android/app/build/outputs/apk/release/app-release.apk "openarr-${VERSION}.apk"
+          gh release create "$TAG" "openarr-${VERSION}.apk" \
+            --target "$GITHUB_SHA" --title "$TAG" --generate-notes
