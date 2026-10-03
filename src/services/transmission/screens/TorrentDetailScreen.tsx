@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemedAlert } from '../../../core/components/ThemedAlert';
@@ -6,9 +6,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radii, typography } from '../../../core/theme/tokens';
 import { ProgressBar } from '../../../core/components/ProgressBar';
-import { useServiceConfig } from '../../../core/hooks/useServer';
-import { useConnectionStore } from '../../../stores/connectionStore';
-import { getTransmissionAdapter } from '../../../services/adapterFactory';
+import { useTorrentClient } from '../../../services/torrentClient';
 import { usePolling } from '../../../core/hooks/usePolling';
 import { Torrent, TorrentStatus } from '../types';
 import { formatBytes as formatSize, formatSpeed } from '../../../core/utils/format';
@@ -29,9 +27,7 @@ export function TorrentDetailScreen() {
   const initialTorrent: Torrent = route.params?.torrent;
   const [torrent, setTorrent] = useState<Torrent>(initialTorrent);
 
-  const config = useServiceConfig('transmission');
-  const isLocal = useConnectionStore((s) => s.isLocal);
-  const adapter = useMemo(() => config ? getTransmissionAdapter(config, isLocal) : null, [config, isLocal]);
+  const { client: adapter } = useTorrentClient();
 
   const refresh = useCallback(async () => {
     if (!adapter) return;
@@ -120,7 +116,7 @@ export function TorrentDetailScreen() {
                 {stat && (
                   <Switch value={stat.wanted} onValueChange={async (wanted) => {
                     if (!adapter) return;
-                    await adapter.setTorrent([torrent.id], { 'files-wanted': wanted ? [idx] : [], 'files-unwanted': wanted ? [] : [idx] });
+                    await adapter.setFilesWanted(torrent.id, [idx], wanted);
                     refresh();
                   }} trackColor={{ true: colors.primary, false: 'rgba(255,255,255,0.1)' }} thumbColor="#fff" />
                 )}

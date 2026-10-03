@@ -2,6 +2,7 @@ import { AxiosInstance } from 'axios';
 import { createTransmissionClient } from '../../core/api/httpClient';
 import { ServiceConfig, ServiceStatus } from '../../core/types/services';
 import { Torrent, SessionStats, TransmissionSession } from './types';
+import type { TorrentClient, TransferInfo } from '../torrentClient';
 
 // Slim set for the list view, files/fileStats/magnetLink only load in detail
 const LIST_FIELDS = [
@@ -38,8 +39,9 @@ const TORRENT_FIELDS = [
   'peersSendingToUs',
 ];
 
-export class TransmissionAdapter {
+export class TransmissionAdapter implements TorrentClient {
   readonly id = 'transmission' as const;
+  readonly label = 'Transmission';
   private client: AxiosInstance;
 
   constructor(config: ServiceConfig, isLocal: boolean) {
@@ -130,4 +132,13 @@ export class TransmissionAdapter {
     return result['size-bytes'];
   }
 
+  async setFilesWanted(id: number, fileIndexes: number[], wanted: boolean): Promise<void> {
+    await this.setTorrent([id], wanted ? { 'files-wanted': fileIndexes } : { 'files-unwanted': fileIndexes });
+  }
+
+  async getTransferInfo(): Promise<TransferInfo> {
+    const [stats, session] = await Promise.all([this.getSessionStats(), this.getSession()]);
+    const freeSpace = await this.getFreeSpace(session.downloadDir).catch(() => null);
+    return { downloadSpeed: stats.downloadSpeed, uploadSpeed: stats.uploadSpeed, freeSpace };
+  }
 }

@@ -59,7 +59,7 @@
     "typescript": "~5.9.2"
   },
   "private": true,
-  "description": "Android app for managing your self-hosted media stack: Sonarr, Radarr, Bazarr, Prowlarr, Transmission, Portainer, Gluetun and Emby, with TMDB discovery",
+  "description": "Android app for managing your self-hosted media stack: Sonarr, Radarr, Bazarr, Prowlarr, Transmission, qBittorrent, Portainer, Gluetun, Emby and Jellyfin, with TMDB discovery",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -71,9 +71,11 @@
     "bazarr",
     "prowlarr",
     "transmission",
+    "qbittorrent",
     "portainer",
     "gluetun",
     "emby",
+    "jellyfin",
     "self-hosted",
     "arr",
     "react-native",

@@ -9,12 +9,14 @@ export const colors = {
   primaryMuted: 'rgba(100, 255, 218, 0.1)',
   primaryBorder: 'rgba(100, 255, 218, 0.15)',
   transmission: '#e94560',
+  qbittorrent: '#2f80ed',
   sonarr: '#3fbac2',
   radarr: '#ffc107',
   prowlarr: '#e07b39',
   bazarr: '#a855f7',
   portainer: '#13bef9',
   emby: '#52b54b',
+  jellyfin: '#00a4dc',
   gluetun: '#5dd39e',
   success: '#64ffda',
   error: '#e94560',
@@ -61,12 +63,14 @@ export const typography = {
 
 export const serviceConfig = {
   transmission: { color: colors.transmission, label: 'Transmission', icon: 'T' },
+  qbittorrent: { color: colors.qbittorrent, label: 'qBittorrent', icon: 'Q' },
   sonarr: { color: colors.sonarr, label: 'Sonarr', icon: 'S' },
   radarr: { color: colors.radarr, label: 'Radarr', icon: 'R' },
   prowlarr: { color: colors.prowlarr, label: 'Prowlarr', icon: 'P' },
   bazarr: { color: colors.bazarr, label: 'Bazarr', icon: 'B' },
   portainer: { color: colors.portainer, label: 'Portainer', icon: 'P' },
   emby: { color: colors.emby, label: 'Emby', icon: 'E' },
+  jellyfin: { color: colors.jellyfin, label: 'Jellyfin', icon: 'J' },
   gluetun: { color: colors.gluetun, label: 'Gluetun VPN', icon: 'G' },
 } as const;
 

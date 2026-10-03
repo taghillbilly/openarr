@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, Text, StyleSheet, RefreshControl, Platform, TextInput, Pressable, Modal, KeyboardAvoidingView } from 'react-native';
 import { useThemedAlert } from '../../../core/components/ThemedAlert';
@@ -11,9 +11,7 @@ import { FilterChips } from '../../../core/components/FilterChips';
 import { FAB } from '../../../core/components/FAB';
 import { TorrentItem } from '../components/TorrentItem';
 import { Torrent, TorrentStatus } from '../types';
-import { useServiceConfig } from '../../../core/hooks/useServer';
-import { useConnectionStore } from '../../../stores/connectionStore';
-import { getTransmissionAdapter } from '../../../services/adapterFactory';
+import { useTorrentClient } from '../../../services/torrentClient';
 import { usePolling } from '../../../core/hooks/usePolling';
 import { LoadingSpinner } from '../../../core/components/LoadingSpinner';
 import { useToastStore } from '../../../core/hooks/useToast';
@@ -30,9 +28,7 @@ const filterMap: Record<FilterId, (t: Torrent) => boolean> = {
 
 export function TorrentListScreen() {
   const insets = useSafeAreaInsets();
-  const config = useServiceConfig('transmission');
-  const isLocal = useConnectionStore((s) => s.isLocal);
-  const adapter = useMemo(() => config ? getTransmissionAdapter(config, isLocal) : null, [config, isLocal]);
+  const { config, client: adapter } = useTorrentClient();
   const navigation = useNavigation<any>();
 
   const [torrents, setTorrents] = useState<Torrent[]>([]);
@@ -104,8 +100,8 @@ export function TorrentListScreen() {
   if (!config) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Text style={styles.emptyText}>Transmission not configured.</Text>
-        <Text style={styles.emptySubtext}>Add it in Settings to see your torrents.</Text>
+        <Text style={styles.emptyText}>No torrent client configured.</Text>
+        <Text style={styles.emptySubtext}>Add Transmission or qBittorrent in Settings to see your torrents.</Text>
       </View>
     );
   }

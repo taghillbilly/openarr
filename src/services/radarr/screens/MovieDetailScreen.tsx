@@ -14,8 +14,7 @@ import { ActionSheet, ActionSheetOption } from '../../../core/components/ActionS
 import { Movie } from '../types';
 import { useReleaseSearch } from '../../shared-arr/hooks';
 import { useToastStore } from '../../../core/hooks/useToast';
-import { openInEmby } from '../../emby/openInEmby';
-import { useServerStore } from '../../../stores/serverStore';
+import { openInMediaServer, useMediaServerConfig } from '../../mediaServer';
 import { useServiceConfig } from '../../../core/hooks/useServer';
 import { useConnectionStore } from '../../../stores/connectionStore';
 import { getRadarrAdapter } from '../../../services/adapterFactory';
@@ -49,7 +48,8 @@ export function MovieDetailScreen() {
   const { alert } = useThemedAlert();
   const showToast = useToastStore((s) => s.show);
   const radarrConfig = useServiceConfig('radarr');
-  const embyConfig = useServerStore((s) => s.getServiceConfig('emby'));
+  const mediaServerConfig = useMediaServerConfig();
+  const mediaServerId = mediaServerConfig?.serviceId === 'jellyfin' ? 'jellyfin' : 'emby';
   const isLocal = useConnectionStore((s) => s.isLocal);
 
   const adapter = useMemo(
@@ -325,18 +325,18 @@ export function MovieDetailScreen() {
       )}
 
       <View style={styles.actionBar}>
-        {movie.hasFile && embyConfig && (
-          <Pressable style={[styles.actionBtn, styles.actionBtnEmby]} onPress={async () => {
-            const err = await openInEmby('Movie', { tmdbId: movie.tmdbId, imdbId: movie.imdbId });
+        {movie.hasFile && mediaServerConfig && (
+          <Pressable style={[styles.actionBtn, mediaServerId === 'jellyfin' ? styles.actionBtnJellyfin : styles.actionBtnEmby]} onPress={async () => {
+            const err = await openInMediaServer('Movie', { tmdbId: movie.tmdbId, imdbId: movie.imdbId });
             if (err) showToast(err, 'error');
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <MaterialCommunityIcons name="play-circle" size={18} color={colors.emby} />
+              <MaterialCommunityIcons name="play-circle" size={18} color={colors[mediaServerId]} />
               <Text
                 style={{ fontSize: 15, lineHeight: 18, color: '#fff', fontWeight: '800', letterSpacing: 0.3, includeFontPadding: false, marginTop: -2 }}
                 numberOfLines={1}
               >
-                emby
+                {mediaServerId}
               </Text>
             </View>
           </Pressable>
@@ -451,6 +451,7 @@ const styles = StyleSheet.create({
   actionBar: { flexDirection: 'row', gap: spacing.sm, padding: spacing.md, paddingHorizontal: spacing.lg, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surfaceElevated },
   actionBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: radii.md, borderWidth: 1, borderColor: colors.divider, alignItems: 'center', justifyContent: 'center' },
   actionBtnEmby: { backgroundColor: 'rgba(82,181,75,0.12)', borderColor: 'rgba(82,181,75,0.4)' },
+  actionBtnJellyfin: { backgroundColor: 'rgba(0,164,220,0.12)', borderColor: 'rgba(0,164,220,0.4)' },
   actionBtnPrimary: { backgroundColor: colors.primaryMuted, borderColor: colors.primaryBorder, flex: 2 },
   actionBtnText: { ...typography.bodyBold, color: colors.textMuted },
   actionBtnTextPrimary: { color: colors.primary },

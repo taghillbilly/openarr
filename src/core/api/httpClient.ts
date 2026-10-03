@@ -14,6 +14,10 @@ const TIMEOUT_MS: Record<string, number> = {
   default: 30000,
 };
 
+export function jellyfinAuthHeader(token: string): string {
+  return `MediaBrowser Token="${token}", Client="OpenArr"`;
+}
+
 export function createServiceClient(config: ServiceConfig, isLocal: boolean): AxiosInstance {
   const baseURL = isLocal ? config.localUrl : config.remoteUrl;
   const fullBaseURL = config.basePath ? `${baseURL}${config.basePath}` : baseURL;
@@ -36,6 +40,9 @@ export function createServiceClient(config: ServiceConfig, isLocal: boolean): Ax
         req.headers.set('X-API-Key', config.apiKey);
       } else if (config.serviceId === 'emby') {
         req.headers.set('X-Emby-Token', config.apiKey);
+      } else if (config.serviceId === 'jellyfin') {
+        // Jellyfin 12 disables X-Emby-Token and friends by default
+        req.headers.set('Authorization', jellyfinAuthHeader(config.apiKey!));
       } else {
         req.headers.set('X-Api-Key', config.apiKey);
       }

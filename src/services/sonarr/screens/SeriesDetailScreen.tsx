@@ -19,7 +19,7 @@ import { useConnectionStore } from '../../../stores/connectionStore';
 import { getSonarrAdapter } from '../../../services/adapterFactory';
 import { useServerStore } from '../../../stores/serverStore';
 import { useToastStore } from '../../../core/hooks/useToast';
-import { openInEmby } from '../../emby/openInEmby';
+import { openInMediaServer, useMediaServerConfig } from '../../mediaServer';
 import { RatingsBar } from '../../../core/components/RatingsBar';
 import { MediaInfo } from '../../../core/components/MediaInfo';
 import { OMDBRatings } from '../../omdb/client';
@@ -52,7 +52,8 @@ export function SeriesDetailScreen() {
   }>({ visible: false, title: '', options: [] });
 
   const sonarrConfig = useServiceConfig('sonarr');
-  const embyConfig = useServerStore((s) => s.getServiceConfig('emby'));
+  const mediaServerConfig = useMediaServerConfig();
+  const mediaServerId = mediaServerConfig?.serviceId === 'jellyfin' ? 'jellyfin' : 'emby';
   const isLocal = useConnectionStore((s) => s.isLocal);
   const showToast = useToastStore((s) => s.show);
 
@@ -453,18 +454,18 @@ export function SeriesDetailScreen() {
       </ScrollView>
 
       <View style={styles.actionBar}>
-        {(series.statistics?.episodeFileCount ?? 0) > 0 && embyConfig && (
-          <Pressable style={[styles.actionBtn, styles.actionBtnEmby]} onPress={async () => {
-            const err = await openInEmby('Series', { tvdbId: series.tvdbId, imdbId: series.imdbId, tmdbId: series.tmdbId });
+        {(series.statistics?.episodeFileCount ?? 0) > 0 && mediaServerConfig && (
+          <Pressable style={[styles.actionBtn, mediaServerId === 'jellyfin' ? styles.actionBtnJellyfin : styles.actionBtnEmby]} onPress={async () => {
+            const err = await openInMediaServer('Series', { tvdbId: series.tvdbId, imdbId: series.imdbId, tmdbId: series.tmdbId });
             if (err) showToast(err, 'error');
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <MaterialCommunityIcons name="play-circle" size={18} color={colors.emby} />
+              <MaterialCommunityIcons name="play-circle" size={18} color={colors[mediaServerId]} />
               <Text
                 style={{ fontSize: 15, lineHeight: 18, color: '#fff', fontWeight: '800', letterSpacing: 0.3, includeFontPadding: false, marginTop: -2 }}
                 numberOfLines={1}
               >
-                emby
+                {mediaServerId}
               </Text>
             </View>
           </Pressable>
@@ -548,6 +549,7 @@ const styles = StyleSheet.create({
   actionBar: { flexDirection: 'row', gap: spacing.sm, padding: spacing.md, paddingHorizontal: spacing.lg, borderTopWidth: 1, borderTopColor: colors.divider, backgroundColor: colors.surfaceElevated },
   actionBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: radii.md, borderWidth: 1, borderColor: colors.divider, alignItems: 'center', justifyContent: 'center' },
   actionBtnEmby: { backgroundColor: 'rgba(82,181,75,0.12)', borderColor: 'rgba(82,181,75,0.4)' },
+  actionBtnJellyfin: { backgroundColor: 'rgba(0,164,220,0.12)', borderColor: 'rgba(0,164,220,0.4)' },
   actionBtnPrimary: { backgroundColor: colors.primaryMuted, borderColor: colors.primaryBorder, flex: 2 },
   actionBtnText: { ...typography.bodyBold, color: colors.textMuted },
   actionBtnTextPrimary: { color: colors.primary },

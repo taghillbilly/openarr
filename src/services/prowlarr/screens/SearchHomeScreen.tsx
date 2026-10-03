@@ -12,8 +12,8 @@ import { formatReleaseAge, formatSize, peerHealthColor, ReleaseSortKey, sortRele
 import { SearchResult, SearchType, Indexer, IndexerStats } from '../types';
 import { useServiceConfig } from '../../../core/hooks/useServer';
 import { useConnectionStore } from '../../../stores/connectionStore';
-import { getProwlarrAdapter, getTransmissionAdapter } from '../../../services/adapterFactory';
-import { useServerStore } from '../../../stores/serverStore';
+import { getProwlarrAdapter } from '../../../services/adapterFactory';
+import { useTorrentClient } from '../../../services/torrentClient';
 import { useToastStore } from '../../../core/hooks/useToast';
 import { DashboardButton } from '../../../core/components/DashboardButton';
 
@@ -23,7 +23,7 @@ export function SearchHomeScreen() {
   const config = useServiceConfig('prowlarr');
   const isLocal = useConnectionStore((s) => s.isLocal);
   const adapter = useMemo(() => config ? getProwlarrAdapter(config, isLocal) : null, [config, isLocal]);
-  const txConfig = useServerStore((s) => s.getServiceConfig('transmission'));
+  const { client: torrentClient } = useTorrentClient();
   const showToast = useToastStore((s) => s.show);
 
   const [query, setQuery] = useState('');
@@ -63,13 +63,12 @@ export function SearchHomeScreen() {
     } catch (e: any) { alert('Grab Failed', e.message); }
   };
 
-  const grabViaTransmission = async (item: SearchResult) => {
+  const grabViaTorrentClient = async (item: SearchResult) => {
     if (!item.downloadUrl) { alert('Error', 'No download URL available'); return; }
-    if (!txConfig) { alert('Error', 'Transmission not configured'); return; }
+    if (!torrentClient) { alert('Error', 'No torrent client configured'); return; }
     try {
-      const tx = getTransmissionAdapter(txConfig, isLocal);
-      await tx.addTorrent({ filename: item.downloadUrl });
-      showToast('Sent to Transmission', 'success');
+      await torrentClient.addTorrent({ filename: item.downloadUrl });
+      showToast(`Sent to ${torrentClient.label}`, 'success');
     } catch (e: any) { alert('Error', e.message); }
   };
 
@@ -81,11 +80,11 @@ export function SearchHomeScreen() {
     const options: ActionSheetOption[] = [
       { label: 'Download via Prowlarr', icon: '⬇️', onPress: () => grabViaProwlarr(item) },
     ];
-    if (txConfig && item.downloadUrl) {
-      options.push({ label: 'Send directly to Transmission', icon: '🔁', onPress: () => grabViaTransmission(item) });
+    if (torrentClient && item.downloadUrl) {
+      options.push({ label: `Send directly to ${torrentClient.label}`, icon: '🔁', onPress: () => grabViaTorrentClient(item) });
     }
     return options;
-  }, [grabSheet.item, txConfig]);
+  }, [grabSheet.item, torrentClient]);
 
   const doSearch = useCallback(async () => {
     if (!query.trim()) return;

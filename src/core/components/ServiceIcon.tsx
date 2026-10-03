@@ -11,6 +11,7 @@ interface ServiceIconProps {
 
 const serviceIconMap: Record<string, string> = {
   transmission: 'swap-vertical',
+  qbittorrent: 'download-network-outline',
   sonarr: 'television-classic',
   radarr: 'movie-open',
   prowlarr: 'magnify',
@@ -18,6 +19,7 @@ const serviceIconMap: Record<string, string> = {
   portainer: 'docker',
   gluetun: 'shield-lock',
   emby: 'play-circle-outline',
+  jellyfin: 'jellyfish-outline',
 };
 
 export function ServiceIcon({ serviceId, size = 44 }: ServiceIconProps) {

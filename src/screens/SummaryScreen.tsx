@@ -10,10 +10,10 @@ import { ActionSheet, ActionSheetOption } from '../core/components/ActionSheet';
 import { usePolling } from '../core/hooks/usePolling';
 import { useServerStore } from '../stores/serverStore';
 import { useConnectionStore } from '../stores/connectionStore';
-import { getSonarrAdapter, getRadarrAdapter, getEmbyAdapter, clearAdapters } from '../services/adapterFactory';
+import { getSonarrAdapter, getRadarrAdapter, clearAdapters } from '../services/adapterFactory';
 import { useStatusStore } from '../stores/statusStore';
 import { useLibraryStore } from '../stores/libraryStore';
-import { openEmbyRef } from '../services/emby/openInEmby';
+import { findMediaServerConfig, getMediaServer, openMediaRef } from '../services/mediaServer';
 import { EmbyMediaItem } from '../services/emby/adapter';
 import { Movie } from '../services/radarr/types';
 
@@ -91,7 +91,7 @@ export function SummaryScreen() {
     const stale = () => seq !== fetchSeq.current;
     const sonarrConfig = configOf('sonarr');
     const radarrConfig = configOf('radarr');
-    const embyConfig = configOf('emby');
+    const embyConfig = findMediaServerConfig(enabledServices);
     const now = new Date();
 
     // Clear sections owned by services the active server doesn't have,
@@ -113,7 +113,7 @@ export function SummaryScreen() {
     await Promise.allSettled([
       (async () => {
         if (!embyConfig) return;
-        const emby = getEmbyAdapter(embyConfig, isLocal);
+        const emby = getMediaServer(embyConfig, isLocal);
         const [resume, next, freshShows, freshMovies, played] = await Promise.all([
           emby.getResumeItems().catch(() => []),
           emby.getNextUp().catch(() => []),
@@ -194,7 +194,7 @@ export function SummaryScreen() {
       lastContent.current = { at: Date.now(), serverId: server.id };
       setLoaded(true);
     }
-  }, [server, configOf, isLocal, navigation]);
+  }, [server, configOf, enabledServices, isLocal, navigation]);
 
   usePolling(fetchContent, 900000, !!server);
 
@@ -217,13 +217,13 @@ export function SummaryScreen() {
   }, [fetchContent, fetchHealth]);
 
   const openEmbyItem = (item: EmbyMediaItem) => {
-    if (embyAdapter) openEmbyRef(embyAdapter, item).catch(() => {});
+    if (embyAdapter) openMediaRef(embyAdapter, item).catch(() => {});
   };
 
   const embyAdapter = useMemo(() => {
-    const cfg = configOf('emby');
-    return cfg ? getEmbyAdapter(cfg, isLocal) : null;
-  }, [configOf, isLocal]);
+    const cfg = findMediaServerConfig(enabledServices);
+    return cfg ? getMediaServer(cfg, isLocal) : null;
+  }, [enabledServices, isLocal]);
 
   // Hide items the user already watched in Emby (no-op when Emby is unavailable)
   const unwatchedEpisodes = useMemo(() => readyEpisodes.filter((e: any) =>
@@ -319,10 +319,10 @@ export function SummaryScreen() {
           </View>
         )}
 
-        {server && !configOf('emby') && (
+        {server && !findMediaServerConfig(enabledServices) && (
           <View style={styles.serviceNote}>
             <Ionicons name="information-circle-outline" size={14} color={colors.textMuted} />
-            <Text style={styles.serviceNoteText}>Emby not connected, Continue Watching and watched-state filtering unavailable.</Text>
+            <Text style={styles.serviceNoteText}>Emby/Jellyfin not connected, Continue Watching and watched-state filtering unavailable.</Text>
           </View>
         )}
 

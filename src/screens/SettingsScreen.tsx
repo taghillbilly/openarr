@@ -229,7 +229,7 @@ export function SettingsScreen() {
         </View>
         <View style={styles.rowContent}>
           <Text style={styles.rowTitle}>Credits</Text>
-          <Text style={styles.rowSub}>Powered by Sonarr, Radarr, Prowlarr, Bazarr, Transmission, Portainer, Gluetun and Emby · Metadata from TMDB & OMDB</Text>
+          <Text style={styles.rowSub}>Powered by Sonarr, Radarr, Prowlarr, Bazarr, Transmission, qBittorrent, Portainer, Gluetun, Emby and Jellyfin · Metadata from TMDB & OMDB</Text>
         </View>
       </View>
 

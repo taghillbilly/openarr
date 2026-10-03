@@ -6,7 +6,7 @@
 
 **Your whole self-hosted media stack in one Android app**
 
-Sonarr · Radarr · Bazarr · Prowlarr · Transmission · Portainer · Gluetun · Emby
+Sonarr · Radarr · Bazarr · Prowlarr · Transmission · qBittorrent · Portainer · Gluetun · Emby · Jellyfin
 
 [![CI](https://github.com/gdsoumya/openarr/actions/workflows/ci.yml/badge.svg)](https://github.com/gdsoumya/openarr/actions/workflows/ci.yml)
 [![Release](https://github.com/gdsoumya/openarr/actions/workflows/release.yml/badge.svg)](https://github.com/gdsoumya/openarr/actions/workflows/release.yml)
@@ -27,9 +27,9 @@ licensed.
 
 ## Features
 
-- **Home**: cross-service dashboard: continue watching and next-up from Emby,
-  latest unwatched shows/movies (cross-referenced against your Emby watched
-  state), a scrollable schedule of upcoming monitored releases, and a
+- **Home**: cross-service dashboard: continue watching and next-up from Emby or
+  Jellyfin, latest unwatched shows/movies (cross-referenced against your
+  watched state), a scrollable schedule of upcoming monitored releases, and a
   cumulative health pill for every connected service.
 - **TV & Movies**: full Sonarr/Radarr library management plus
   Jellyseerr-style discovery: trending/popular/genre rows, personalized
@@ -38,7 +38,7 @@ licensed.
   by TMDB/IMDB/Rotten Tomatoes ratings.
 - **Interactive search**: Sonarr/Radarr-grade manual release search with
   quality/custom-format/seeder details, plus Prowlarr indexer search.
-- **Torrents**: Transmission client: live speeds, filters, add via magnet,
+- **Torrents**: Transmission or qBittorrent: live speeds, filters, add via magnet,
   per-torrent files and controls.
 - **Subs**: full Bazarr management: search/download per episode or movie,
   wanted, history, blacklist, providers, mass search.
@@ -57,9 +57,11 @@ licensed.
 | Prowlarr | API key | 9696 | Settings → General → API Key |
 | Bazarr | API key | 6767 | Header auth (`X-API-KEY`) |
 | Transmission | Basic auth | 9091 | `/rpc` appended automatically |
+| qBittorrent | Web UI login | 8080 | Web UI username/password, or blank if auth is bypassed for your LAN |
 | Portainer | Access token | 9000 | See gotchas below |
 | Gluetun | none | 8000 | **Requires the custom fork (see below)** |
 | Emby | API key | 8096 | Settings → Advanced → API Keys |
+| Jellyfin | API key | 8096 | Dashboard → API Keys |
 
 Discovery uses TMDB (bundled read token, overridable in Settings) and OMDB for
 IMDB/Rotten Tomatoes ratings (bring your own free key from
@@ -87,6 +89,15 @@ IMDB/Rotten Tomatoes ratings (bring your own free key from
 - **Emby**: an admin-created API key is used; watched state comes from the
   server's first user, which fits single-user setups. "Open in Emby" deep-links
   into the Emby app when installed, otherwise the web UI.
+- **Jellyfin**: same model as Emby (admin API key, first user's watched
+  state). The key is sent as `Authorization: MediaBrowser Token=...`, which
+  Jellyfin 12 requires. "Open in Jellyfin" opens the item in the web UI (the
+  Jellyfin Android app has no item deep link). If both Emby and Jellyfin are
+  enabled, Emby is used.
+- **qBittorrent**: OpenArr logs in with the Web UI credentials and keeps the
+  session cookie; works with 4.x and 5.x. Free space on the dashboard appears
+  once qBittorrent has checked the default save path. If both Transmission
+  and qBittorrent are enabled, the Torrents tab uses Transmission.
 - **HTTP vs HTTPS**: cleartext HTTP is supported for LAN use, but anything
   remote should be HTTPS, the app warns when a remote URL uses `http://`
   because API keys and passwords would travel unencrypted.

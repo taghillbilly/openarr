@@ -1,6 +1,7 @@
 import { AxiosInstance } from 'axios';
 import { createServiceClient } from '../../core/api/httpClient';
 import { ServiceConfig, ServiceStatus } from '../../core/types/services';
+import type { MediaServer } from '../mediaServer';
 
 export interface EmbyItemRef { Id: string; ServerId: string; Name: string; }
 
@@ -20,8 +21,9 @@ export interface EmbyMediaItem {
   ProviderIds?: Record<string, string>;
 }
 
-export class EmbyAdapter {
+export class EmbyAdapter implements MediaServer {
   readonly id = 'emby' as const;
+  readonly label = 'Emby';
   private client: AxiosInstance;
   readonly baseUrl: string;
   private apiKey: string;
@@ -137,6 +139,10 @@ export class EmbyAdapter {
       if (item) return { Id: item.Id, ServerId: item.ServerId, Name: item.Name };
     }
     return null;
+  }
+
+  itemAppUrl(item: EmbyItemRef): string | null {
+    return `emby://items/${item.ServerId}/${item.Id}`;
   }
 
   itemWebUrl(item: EmbyItemRef): string {

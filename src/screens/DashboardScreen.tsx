@@ -7,7 +7,7 @@ import { colors, spacing, typography, ServiceId } from '../core/theme/tokens';
 import { ServiceCard } from '../core/components/ServiceCard';
 import { useServerStore } from '../stores/serverStore';
 import { useConnectionStore } from '../stores/connectionStore';
-import { getTransmissionAdapter } from '../services/adapterFactory';
+import { findTorrentClientConfig, getTorrentClient } from '../services/torrentClient';
 import { useStatusStore } from '../stores/statusStore';
 import { usePolling } from '../core/hooks/usePolling';
 import { useToastStore } from '../core/hooks/useToast';
@@ -27,7 +27,7 @@ export function DashboardScreen() {
 
   const enabledServices = useMemo(() => server?.services.filter((s) => s.enabled) ?? [], [server]);
   const tabMap: Partial<Record<ServiceId, string>> = {
-    transmission: 'Torrents', sonarr: 'TV', radarr: 'Movies', prowlarr: 'Search', bazarr: 'Subs',
+    transmission: 'Torrents', qbittorrent: 'Torrents', sonarr: 'TV', radarr: 'Movies', prowlarr: 'Search', bazarr: 'Subs',
     portainer: 'Infra', gluetun: 'Infra',
   };
   const erroredServicesRef = useRef<Set<string>>(new Set());
@@ -51,17 +51,16 @@ export function DashboardScreen() {
       }
     }
 
-    // Transmission speed/free-space banner (download notifications live in useDownloadMonitor)
-    const txConfig = server.services.find(s => s.serviceId === 'transmission' && s.enabled);
+    // Torrent client speed/free-space banner (download notifications live in useDownloadMonitor)
+    const txConfig = findTorrentClientConfig(server.services);
     if (txConfig) {
       try {
-        const tx = getTransmissionAdapter(txConfig, isLocal);
-        const [stats, session] = await Promise.all([tx.getSessionStats(), tx.getSession()]);
-        setDownloadSpeed(stats.downloadSpeed);
-        setUploadSpeed(stats.uploadSpeed);
-        setFreeSpace(await tx.getFreeSpace(session.downloadDir));
+        const info = await getTorrentClient(txConfig, isLocal).getTransferInfo();
+        setDownloadSpeed(info.downloadSpeed);
+        setUploadSpeed(info.uploadSpeed);
+        setFreeSpace(info.freeSpace ?? 0);
       } catch {
-        // Stale numbers are worse than zeros when transmission drops
+        // Stale numbers are worse than zeros when the client drops
         setDownloadSpeed(0);
         setUploadSpeed(0);
         setFreeSpace(0);
@@ -121,7 +120,7 @@ export function DashboardScreen() {
       </Pressable>
       {enabledServices.map((svc) => {
         const status = statuses[svc.serviceId];
-        const isTx = svc.serviceId === 'transmission';
+        const isTx = svc.serviceId === findTorrentClientConfig(enabledServices)?.serviceId;
         const txConnected = isTx && status?.connection.status === 'connected';
         return (
           <ServiceCard key={svc.serviceId} serviceId={svc.serviceId}
@@ -131,7 +130,7 @@ export function DashboardScreen() {
             connected={status?.connection.status === 'connected'}
             metric={txConnected && freeSpace > 0 ? { value: formatBytes(freeSpace), label: 'free' } : status?.metric}
             onPress={() => {
-              if (svc.serviceId === 'emby') { Linking.openURL(isLocal ? svc.localUrl : svc.remoteUrl); return; }
+              if (svc.serviceId === 'emby' || svc.serviceId === 'jellyfin') { Linking.openURL(isLocal ? svc.localUrl : svc.remoteUrl); return; }
               const tab = tabMap[svc.serviceId];
               if (tab === 'Infra') {
                 navigation.navigate('Main', { screen: 'Infra', params: { screen: 'InfraHome', params: { tab: svc.serviceId === 'gluetun' ? 'vpn' : 'docker' } } });

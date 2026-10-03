@@ -5,8 +5,8 @@
 > update this file in the same PR.
 
 OpenArr is a React Native (Expo) Android app for managing a self-hosted media
-stack: Sonarr, Radarr, Prowlarr, Bazarr, Transmission, Portainer, Gluetun and
-Emby, with TMDB-powered discovery.
+stack: Sonarr, Radarr, Prowlarr, Bazarr, Transmission or qBittorrent,
+Portainer, Gluetun and Emby or Jellyfin, with TMDB-powered discovery.
 
 ## Architecture
 
@@ -19,6 +19,12 @@ Emby, with TMDB-powered discovery.
   instances; `clearAdapters()` must be called whenever server config or
   connection mode changes. `src/core/api/httpClient.ts` builds the axios client
   and owns per-service auth (header names differ per service (see below)).
+- **Interchangeable services**: Transmission/qBittorrent implement
+  `TorrentClient` (`src/services/torrentClient.ts`, both speak Transmission's
+  `Torrent` model) and Emby/Jellyfin implement `MediaServer`
+  (`src/services/mediaServer.ts`). Screens go through `useTorrentClient()` /
+  `findMediaServerConfig()`, never a specific adapter; when both are enabled
+  Transmission and Emby win.
 - **State** is zustand stores in `src/stores/`: `serverStore` (server/service
   configs, persisted), `connectionStore` (local/remote + manual mode override),
   `statusStore` (shared TTL'd health sweeps), `libraryStore` (tmdb-keyed
@@ -86,7 +92,9 @@ These were earned through profiling, don't regress them:
 - **Auth travels in headers, never query params.** Per-service headers:
   `X-Api-Key` (arr apps), `X-API-KEY` (Bazarr), `X-API-Key` (Portainer, exact
   casing), `X-Emby-Token` (Emby, including image requests via
-  `CachedImage headers`). Query-param keys leak into proxy logs and caches.
+  `CachedImage headers`), `Authorization: MediaBrowser Token="..."` (Jellyfin,
+  also for images), session cookie from `/api/v2/auth/login` (qBittorrent,
+  never basic auth). Query-param keys leak into proxy logs and caches.
 - **Storage**: MMKV encrypted with the per-device key; `allowBackup=false` in
   the Android manifest keeps credentials out of device/cloud backups. Backup
   exports are plaintext by design but write to the cache dir and delete after
@@ -110,6 +118,18 @@ These were earned through profiling, don't regress them:
   `includeUnknownMovieItems` are service-specific; send both.
 - **Transmission**: CSRF token dance on 409 is handled in the adapter; `/rpc`
   is appended automatically.
+- **qBittorrent**: ids are info hashes; the adapter hands the UI stable
+  session-local numeric ids. Login answers 200 `Ok.`/`Fails.` on 4.x and
+  204/401 on 5.x; 5.x renamed `pause`/`resume` to `stop`/`start` (the adapter
+  tries the new name and pins the old one on 404). `torrents/info` lags state
+  changes by up to ~1s. Free space only comes from `sync/maindata` (polled
+  incrementally via `rid`) and is -1 until qBittorrent's periodic disk check
+  runs.
+- **Jellyfin**: no `/emby` prefix (removed in 12.0), `X-Emby-Token` is
+  disabled by default in 12.0, user-scoped routes are `/UserItems/...`,
+  `/Items/Latest` etc. with `?userId=` (10.9+; the adapter falls back to
+  `/Users/{id}/...` on 404). `/Items` has no provider-id filter, so lookups use
+  a 10 min cached `Fields=ProviderIds` index.
 - **Emby**: watched-state matching uses TVDB episode ids first, then
   title|season|episode fallback. Per-user data uses the first `/Users` entry.
 

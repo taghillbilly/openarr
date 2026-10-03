@@ -20,6 +20,8 @@ const SERVICE_META: Record<ServiceId, { defaultPort: string; authMode: AuthMode;
   portainer: { defaultPort: '9000', authMode: 'apikey', authHint: 'Portainer → My account → Access tokens. If your HTTPS uses a self-signed cert, use the HTTP port (default: 9000) or a reverse proxy instead.' },
   gluetun: { defaultPort: '8000', authMode: 'none', authHint: 'Gluetun control server URL. The /api prefix is added automatically.' },
   emby: { defaultPort: '8096', authMode: 'apikey', authHint: 'Emby → Settings → Advanced → API Keys' },
+  jellyfin: { defaultPort: '8096', authMode: 'apikey', authHint: 'Jellyfin → Dashboard → API Keys' },
+  qbittorrent: { defaultPort: '8080', authMode: 'basic', authHint: 'Web UI username/password from qBittorrent → Options → Web UI. Leave blank if authentication is bypassed for your network.' },
 };
 
 export function ServiceConfigScreen() {
