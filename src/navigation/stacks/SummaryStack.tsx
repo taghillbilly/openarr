@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SummaryScreen } from '../../screens/SummaryScreen';
+import { RequestsScreen } from '../../services/seerr/screens/RequestsScreen';
 import { colors } from '../../core/theme/tokens';
 import { screenWithBackground, headerFade } from '../../core/components/AppBackground';
 
@@ -19,6 +20,7 @@ export function SummaryStack() {
       }}
     >
       <Stack.Screen name="SummaryHome" component={SummaryScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="SeerrRequests" component={RequestsScreen} options={{ title: 'Requests' }} />
     </Stack.Navigator>
   );
 }

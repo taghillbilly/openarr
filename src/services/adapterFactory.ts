@@ -9,9 +9,10 @@ import { GluetunAdapter } from './gluetun/adapter';
 import { EmbyAdapter } from './emby/adapter';
 import { QbittorrentAdapter } from './qbittorrent/adapter';
 import { JellyfinAdapter } from './jellyfin/adapter';
+import { SeerrAdapter } from './seerr/adapter';
 
 type AnyAdapter = TransmissionAdapter | SonarrAdapter | RadarrAdapter | ProwlarrAdapter | BazarrAdapter | PortainerAdapter | GluetunAdapter | EmbyAdapter
-  | QbittorrentAdapter | JellyfinAdapter;
+  | QbittorrentAdapter | JellyfinAdapter | SeerrAdapter;
 
 const adapters = new Map<string, AnyAdapter>();
 
@@ -29,6 +30,7 @@ export function getAdapter(config: ServiceConfig, isLocal: boolean): AnyAdapter 
       case 'emby': adapters.set(key, new EmbyAdapter(config, isLocal)); break;
       case 'qbittorrent': adapters.set(key, new QbittorrentAdapter(config, isLocal)); break;
       case 'jellyfin': adapters.set(key, new JellyfinAdapter(config, isLocal)); break;
+      case 'seerr': adapters.set(key, new SeerrAdapter(config, isLocal)); break;
       default: throw new Error(`Unknown service: ${config.serviceId}`);
     }
   }
@@ -65,6 +67,10 @@ export function getGluetunAdapter(config: ServiceConfig, isLocal: boolean): Glue
 
 export function getEmbyAdapter(config: ServiceConfig, isLocal: boolean): EmbyAdapter {
   return getAdapter(config, isLocal) as EmbyAdapter;
+}
+
+export function getSeerrAdapter(config: ServiceConfig, isLocal: boolean): SeerrAdapter {
+  return getAdapter(config, isLocal) as SeerrAdapter;
 }
 
 export function clearAdapters(): void {

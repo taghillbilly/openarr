@@ -243,6 +243,10 @@ export function SummaryScreen() {
   const totalChecked = Object.keys(serviceStatuses).length;
   const allUp = totalChecked > 0 && downServices.length === 0;
 
+  // Pending requests ride on the shared status sweep, no extra fetch
+  const seerrStatus = serviceStatuses.seerr;
+  const seerrPending = seerrStatus?.connection.status === 'connected' ? Number(seerrStatus.metric?.value ?? 0) : null;
+
   // If the schedule card disappears mid-drag its end callbacks never fire , 
   // never leave the page lock stuck
   React.useEffect(() => {
@@ -331,6 +335,26 @@ export function SummaryScreen() {
             <Ionicons name="information-circle-outline" size={14} color={colors.textMuted} />
             <Text style={styles.serviceNoteText}>Sonarr/Radarr not connected, new releases and schedule unavailable.</Text>
           </View>
+        )}
+
+        {server && configOf('seerr') && (
+          <Pressable
+            style={({ pressed }) => [styles.requestsCard, seerrPending ? styles.requestsCardActive : null, pressed && { opacity: 0.7 }]}
+            onPress={() => navigation.navigate('SeerrRequests')}
+            accessibilityRole="button"
+            accessibilityLabel={seerrPending ? `${seerrPending} pending requests, open requests` : 'Open requests'}
+          >
+            <MaterialCommunityIcons name="movie-search-outline" size={20} color={seerrPending ? colors.seerr : colors.textMuted} />
+            <Text style={styles.requestsText}>
+              {seerrPending === null
+                ? (seerrStatus ? 'Seerr not reachable' : 'Checking requests...')
+                : seerrPending === 0 ? 'No pending requests' : `${seerrPending} pending request${seerrPending > 1 ? 's' : ''}`}
+            </Text>
+            {seerrPending ? (
+              <View style={styles.requestsBadge}><Text style={styles.requestsBadgeText}>{seerrPending}</Text></View>
+            ) : null}
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          </Pressable>
         )}
 
         {resumeItems.length > 0 && embyAdapter && (
@@ -517,4 +541,9 @@ const styles = StyleSheet.create({
   scheduleTime: { ...typography.micro, color: colors.textMuted, width: 42, fontVariant: ['tabular-nums'] },
   serviceNote: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginHorizontal: spacing.xl, marginBottom: spacing.md, padding: spacing.md, backgroundColor: '#181c3c', borderWidth: 1, borderColor: colors.divider, borderRadius: radii.md },
   serviceNoteText: { ...typography.micro, color: colors.textMuted, flex: 1 },
+  requestsCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginHorizontal: spacing.xl, marginBottom: spacing.md, paddingVertical: spacing.md, paddingHorizontal: spacing.lg, backgroundColor: colors.surfaceCard, borderWidth: 1, borderColor: colors.surfaceCardBorder, borderRadius: radii.lg },
+  requestsCardActive: { borderColor: `${colors.seerr}66`, backgroundColor: `${colors.seerr}1f` },
+  requestsText: { ...typography.bodyBold, color: colors.textPrimary, flex: 1 },
+  requestsBadge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: colors.seerr, justifyContent: 'center', alignItems: 'center' },
+  requestsBadgeText: { ...typography.badge, color: '#fff' },
 });
