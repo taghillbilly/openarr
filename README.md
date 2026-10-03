@@ -10,9 +10,9 @@ Sonarr · Radarr · Bazarr · Prowlarr · Transmission · qBittorrent · Portain
 
 [![CI](https://github.com/gdsoumya/openarr/actions/workflows/ci.yml/badge.svg)](https://github.com/gdsoumya/openarr/actions/workflows/ci.yml)
 [![Release](https://github.com/gdsoumya/openarr/actions/workflows/release.yml/badge.svg)](https://github.com/gdsoumya/openarr/actions/workflows/release.yml)
-[![Latest release](https://img.shields.io/github/v/release/gdsoumya/openarr?sort=semver&label=release&color=64ffda)](https://github.com/gdsoumya/openarr/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/taghillbilly/openarr?sort=semver&label=release&color=64ffda)](https://github.com/taghillbilly/openarr/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Android-3ddc84?logo=android&logoColor=white)](https://github.com/gdsoumya/openarr/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-Android-3ddc84?logo=android&logoColor=white)](https://github.com/taghillbilly/openarr/releases/latest)
 [![Made with Expo](https://img.shields.io/badge/made%20with-Expo-000020?logo=expo&logoColor=white)](https://expo.dev)
 
 <img src="docs/screenshots/home.png" alt="Home dashboard" width="24%" /> <img src="docs/screenshots/detail.png" alt="Movie detail" width="24%" /> <img src="docs/screenshots/tv.png" alt="TV library and discovery" width="24%" /> <img src="docs/screenshots/discover.png" alt="Discover browse" width="24%" />
@@ -112,7 +112,7 @@ IMDB/Rotten Tomatoes ratings (bring your own free key from
 
 ## Installing
 
-Grab the APK from the [latest release](https://github.com/gdsoumya/openarr/releases)
+Grab the APK from the [latest release](https://github.com/taghillbilly/openarr/releases/latest)
 and sideload it, or build from source below.
 
 ## Building
