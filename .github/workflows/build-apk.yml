@@ -1,0 +1,58 @@
+name: Build APK (manual)
+
+# Builds an installable release APK on demand (Actions tab → "Build APK
+# (manual)" → Run workflow) and uploads it as a workflow artifact. Meant for
+# forks that don't have the upstream signing keys: if the release keystore
+# secrets used by release.yml are set they're used, otherwise the APK is
+# signed with the debug keystore checked into the repo. A debug-signed APK
+# installs fine but cannot update an APK signed with a different key.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Signing config
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/openarr-release.keystore
+            printf 'storeFile=openarr-release.keystore\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+              "$STORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > android/keystore.properties
+          else
+            echo "No release keystore secrets, signing with the debug keystore"
+            printf 'storeFile=debug.keystore\nstorePassword=android\nkeyAlias=androiddebugkey\nkeyPassword=android\n' \
+              > android/keystore.properties
+          fi
+
+      - name: Build release APK
+        run: cd android && ./gradlew assembleRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openarr-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
