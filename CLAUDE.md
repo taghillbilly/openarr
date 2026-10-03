@@ -6,7 +6,8 @@
 
 OpenArr is a React Native (Expo) Android app for managing a self-hosted media
 stack: Sonarr, Radarr, Prowlarr, Bazarr, Transmission or qBittorrent,
-Portainer, Gluetun and Emby or Jellyfin, with TMDB-powered discovery.
+Portainer, Gluetun, Emby or Jellyfin and Seerr (requests), with TMDB-powered
+discovery.
 
 ## Architecture
 
@@ -130,6 +131,11 @@ These were earned through profiling, don't regress them:
   `/Items/Latest` etc. with `?userId=` (10.9+; the adapter falls back to
   `/Users/{id}/...` on 404). `/Items` has no provider-id filter, so lookups use
   a 10 min cached `Fields=ProviderIds` index.
+- **Seerr** (also Overseerr/Jellyseerr): `X-Api-Key`, API under `/api/v1`
+  (the adapter appends it). `/status` is unauthenticated, so connection tests
+  and status use `/request/count`. Request rows carry only a tmdb id; titles
+  and posters come from `/movie|tv/{tmdbId}`, cached in the adapter (bounded
+  at 500). The API key acts as the admin user.
 - **Emby**: watched-state matching uses TVDB episode ids first, then
   title|season|episode fallback. Per-user data uses the first `/Users` entry.
 

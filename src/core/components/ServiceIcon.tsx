@@ -20,6 +20,7 @@ const serviceIconMap: Record<string, string> = {
   gluetun: 'shield-lock',
   emby: 'play-circle-outline',
   jellyfin: 'jellyfish-outline',
+  seerr: 'movie-search-outline',
 };
 
 export function ServiceIcon({ serviceId, size = 44 }: ServiceIconProps) {

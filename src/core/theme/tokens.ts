@@ -18,6 +18,7 @@ export const colors = {
   emby: '#52b54b',
   jellyfin: '#00a4dc',
   gluetun: '#5dd39e',
+  seerr: '#6366f1',
   success: '#64ffda',
   error: '#e94560',
   warning: '#ffc107',
@@ -72,6 +73,7 @@ export const serviceConfig = {
   emby: { color: colors.emby, label: 'Emby', icon: 'E' },
   jellyfin: { color: colors.jellyfin, label: 'Jellyfin', icon: 'J' },
   gluetun: { color: colors.gluetun, label: 'Gluetun VPN', icon: 'G' },
+  seerr: { color: colors.seerr, label: 'Seerr', icon: 'S' },
 } as const;
 
 export type ServiceId = keyof typeof serviceConfig;

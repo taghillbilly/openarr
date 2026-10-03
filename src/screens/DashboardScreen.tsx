@@ -131,6 +131,10 @@ export function DashboardScreen() {
             metric={txConnected && freeSpace > 0 ? { value: formatBytes(freeSpace), label: 'free' } : status?.metric}
             onPress={() => {
               if (svc.serviceId === 'emby' || svc.serviceId === 'jellyfin') { Linking.openURL(isLocal ? svc.localUrl : svc.remoteUrl); return; }
+              if (svc.serviceId === 'seerr') {
+                navigation.navigate('Main', { screen: 'Home', params: { screen: 'SeerrRequests', initial: false } });
+                return;
+              }
               const tab = tabMap[svc.serviceId];
               if (tab === 'Infra') {
                 navigation.navigate('Main', { screen: 'Infra', params: { screen: 'InfraHome', params: { tab: svc.serviceId === 'gluetun' ? 'vpn' : 'docker' } } });

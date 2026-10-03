@@ -21,6 +21,7 @@ const SERVICE_META: Record<ServiceId, { defaultPort: string; authMode: AuthMode;
   gluetun: { defaultPort: '8000', authMode: 'none', authHint: 'Gluetun control server URL. The /api prefix is added automatically.' },
   emby: { defaultPort: '8096', authMode: 'apikey', authHint: 'Emby → Settings → Advanced → API Keys' },
   jellyfin: { defaultPort: '8096', authMode: 'apikey', authHint: 'Jellyfin → Dashboard → API Keys' },
+  seerr: { defaultPort: '5055', authMode: 'apikey', authHint: 'Seerr → Settings → General → API Key. Works with Overseerr and Jellyseerr too.' },
   qbittorrent: { defaultPort: '8080', authMode: 'basic', authHint: 'Web UI username/password from qBittorrent → Options → Web UI. Leave blank if authentication is bypassed for your network.' },
 };
 
